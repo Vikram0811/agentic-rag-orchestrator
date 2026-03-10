@@ -1,6 +1,6 @@
 # Component Explanations
 
-## 4.1 AppContainer
+## 1 AppContainer
 The **AppContainer** is the infrastructure owner. It boots once at startup and holds references to every infrastructure resource:
 
 - Qdrant vector database  
@@ -14,7 +14,7 @@ No other component creates infrastructure directly — everything goes through *
 
 ---
 
-## 4.2 ChatService
+## 2 ChatService
 **ChatService** is the single entry point for the UI.
 
 - Accepts **plain strings**
@@ -38,7 +38,7 @@ Responsibilities:
 
 ---
 
-## 4.3 RAGOrchestrator
+## 3 RAG Orchestrator
 **RAGOrchestrator** owns all interaction with **LangGraph**.
 
 Responsibilities:
@@ -56,7 +56,7 @@ It translates between two layers:
 
 ---
 
-## 4.4 LangGraph State Machine
+## 4 LangGraph State Machine
 The core of the **agentic behavior**.
 
 LangGraph is a framework for building **stateful multi-step AI workflows as directed graphs**.
@@ -81,7 +81,7 @@ A separate **ReAct loop** containing:
 
 ---
 
-## 4.5 Hybrid Retrieval (Qdrant)
+## 5 Hybrid Retrieval (Qdrant)
 **Qdrant** is a vector database purpose-built for similarity search.
 
 This system uses **hybrid retrieval**, combining two strategies.
@@ -94,7 +94,7 @@ This system uses **hybrid retrieval**, combining two strategies.
 
 ---
 
-## 4.6 Parent–Child Chunking
+## 6 Parent–Child Chunking
 Splitting documents into chunks introduces a trade-off:
 
 - **Small chunks** → precise retrieval but poor context
@@ -110,7 +110,7 @@ This preserves both **precision and context**.
 
 ---
 
-## 4.7 ResponseCache
+## 7 ResponseCache
 A **two-tier in-memory cache** with **LRU eviction** for the cross-session tier.
 
 ### Cache Key
@@ -129,7 +129,7 @@ This ensures minor variations in capitalization or spacing still hit the cache.
 
 ---
 
-## 4.8 Session Isolation (`gr.State`)
+## 8 Session Isolation (`gr.State`)
 Gradio’s **`gr.State`** component creates a new value for each browser session using a **factory lambda**.
 
 This system uses it to generate a **unique UUID per user session**.
