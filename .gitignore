@@ -11,8 +11,6 @@ parent_store/
 # Converted markdown docs
 markdown_docs/
 
-docs/
-
 # Python cache
 __pycache__/
 *.pyc
