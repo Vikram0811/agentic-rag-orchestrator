@@ -168,7 +168,7 @@ All tunable parameters are in `config.py`:
 | `MAX_FILE_SIZE_MB` | `50` | Maximum upload file size in MB |
 | `ALLOWED_EXTENSIONS` | `[".pdf", ".md"]` | Accepted file types |
 | `CACHE_TTL_SECONDS` | `3600` | Cross-session cache expiry in seconds |
-| `CACHE_MAX_CROSS_SESSION` | `500` | Maximum cross-session cache entries before LRU eviction |
+| `CACHE_MAX_CROSS_SESSION` | `500` | Maximum cross-session cache entries before Least Recently Used (LRU) eviction |
 | `CHILD_CHUNK_SIZE` | `500` | Child chunk size in characters |
 | `CHILD_CHUNK_OVERLAP` | `100` | Overlap between child chunks |
 | `MIN_PARENT_SIZE` | `2000` | Minimum parent chunk size |
@@ -212,13 +212,20 @@ agentic-rag-orchestrator/
 
 ---
 
+## Documentation
+
+- [Workflow Walkthrough](docs/WORKFLOW.md) — step-by-step trace from user query to streamed answer
+- [Component Reference](docs/COMPONENTS.md) — detailed explanation of every system component
+
+---
+
 ## Known Limitations
 
 - In-memory cache resets on restart — replace with Redis for persistent caching
 - Qdrant runs locally — use Qdrant Cloud for multi-instance deployment
 - `RAG_MIN_RETRIEVAL_SCORE` is calibrated per document set — tune for your PDFs
 - No answer validation step — LLM answer not programmatically verified against source post-generation
-- No rate limiting — add per-session rate limiting before public deployment
+- No rate limiting — add per-session rate limiting before production/public deployment
 
 ---
 
@@ -226,7 +233,7 @@ agentic-rag-orchestrator/
 
 Base architecture inspired by [Giovanni Pasqualino's RAG implementation](https://github.com/giovanni-pasqualino/agentic-rag-for-dummies).
 
-Extended with production hardening across three tiers: hybrid retrieval with score threshold filtering, two-tier response caching with LRU eviction, multi-user session isolation, structured error classification and JSON observability, confidence scoring and source fidelity enforcement, file type and size validation, and conversation reset with session-aware cache clearing.
+Extended with production hardening across three tiers: hybrid retrieval with score threshold filtering, two-tier response caching with Least Recently Used (LRU) eviction, multi-user session isolation, structured error classification and JSON observability, confidence scoring and source fidelity enforcement, file type and size validation, and conversation reset with session-aware cache clearing.
 
 ---
 
