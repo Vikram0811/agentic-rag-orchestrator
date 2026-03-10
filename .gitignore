@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+*.env
+
+# Qdrant local database
+qdrant_db/
+
+# Parent document store
+parent_store/
+
+# Converted markdown docs
+markdown_docs/
+
+docs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+rag_env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
