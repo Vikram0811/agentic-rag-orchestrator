@@ -38,7 +38,7 @@ Responsibilities:
 
 ---
 
-## 3. RAG Orchestrator
+## 3. RAGOrchestrator
 **RAGOrchestrator** owns all interaction with **LangGraph**.
 
 Responsibilities:
