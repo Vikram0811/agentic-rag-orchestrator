@@ -1,11 +1,10 @@
-```md
 # Query Processing
 
 ## Step 1 — Cache Check
 Before any LLM call is made, `ChatService` checks the two-tier `ResponseCache`.
 
-- **Per-session cache** checks if this exact question was asked in the current session.
-- **Cross-session cache** checks if any user asked this question recently within the TTL window.
+**Per-session cache** checks if this exact question was asked in the current session.
+**Cross-session cache** checks if any user asked this question recently within the TTL window.
 
 Cache hits avoid the entire LangGraph pipeline, reducing latency from ~10 seconds to under **100ms**.
 
@@ -75,4 +74,3 @@ After a successful response, `ChatService` stores the answer in:
 The cache is keyed by a **normalized MD5 hash of the query**.
 
 Future identical questions from any user will be served directly from cache.
-```
