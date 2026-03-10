@@ -2,13 +2,13 @@
 
 > A production-grade hybrid retrieval and agent orchestration system built with LangGraph that performs contextual reasoning over enterprise knowledge bases.
 
-Upload any PDF documents and ask questions in plain English. The system retrieves only from your documents, validates confidence, and streams answers token by token — no hallucinations, no guessing.
+Upload any PDF documents and ask questions in plain English. The system retrieves only from your documents, validates confidence, and streams answers token by token.
 
 ---
 
 ## What Makes This Different From a Basic RAG
 
-Most RAG demos follow the same pattern: embed documents → retrieve chunks → prompt LLM → return answer. That works for demos. It breaks in production.
+Most RAG demos follow the same pattern: embed documents → retrieve chunks → prompt LLM → return answer. That works for demos.
 
 This system adds the layer between POC and internal tool:
 
@@ -32,7 +32,7 @@ This system adds the layer between POC and internal tool:
 - **Query Rewriting** — Rewrites user questions into optimized search queries before retrieval
 - **Clarification Handling** — Asks for clarification on ambiguous questions via LangGraph interrupt
 - **Confidence Scoring** — Warns users when retrieval scores fall below threshold
-- **Two-Tier Response Cache** — Per-session cache + cross-session cache with LRU eviction and configurable TTL
+- **Two-Tier Response Cache** — Per-session cache + cross-session cache with Least Recently Used (LRU) eviction and configurable TTL
 - **Multi-User Session Isolation** — Each browser session gets an isolated LangGraph thread
 - **True Token Streaming** — Real-time streaming via `astream_events()` not batch responses
 - **Structured Error Classification** — `RETRIEVAL_EMPTY`, `LLM_TIMEOUT`, `GRAPH_ERROR`, `OFF_TOPIC`, `UNEXPECTED`
