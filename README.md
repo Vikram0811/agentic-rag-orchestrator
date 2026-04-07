@@ -4,6 +4,8 @@
 
 Upload any PDF documents and ask questions in plain English. The system retrieves only from your documents, validates confidence, and streams answers token by token.
 
+![Agentic RAG Orchestrator Demo](assets/demo.gif)
+
 ---
 
 ## What Makes This Different From a Basic RAG
@@ -231,7 +233,7 @@ agentic-rag-orchestrator/
 
 ## Credits
 
-Base architecture inspired by [Giovanni Pasqualino's RAG implementation](https://github.com/giovanni-pasqualino/agentic-rag-for-dummies).
+Base architecture inspired by [Giovanni Pasqualino's RAG implementation](https://github.com/GiovanniPasq/agentic-rag-for-dummies).
 
 Extended with production hardening across three tiers: hybrid retrieval with score threshold filtering, two-tier response caching with Least Recently Used (LRU) eviction, multi-user session isolation, structured error classification and JSON observability, confidence scoring and source fidelity enforcement, file type and size validation, and conversation reset with session-aware cache clearing.
 
