@@ -13,6 +13,8 @@ SPARSE_MODEL = "Qdrant/bm25"
 LLM_MODEL = "gpt-4o-mini"
 LLM_TEMPERATURE = 0
 
+MAX_PDF_PAGES = 150
+
 # --- RAG Configuration ---
 RAG_MIN_RETRIEVAL_SCORE = 0.62
 

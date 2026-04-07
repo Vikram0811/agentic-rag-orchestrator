@@ -29,16 +29,40 @@ class DocumentManager:
     def _validate_file(self, path: str) -> tuple[bool, str]:
         """
         Returns (is_valid, error_message).
-        Checks file extension and size against config limits.
+        Checks file extension, size, and page count against config limits.
         """
         p = Path(path)
 
         if p.suffix.lower() not in config.ALLOWED_EXTENSIONS:
-            return False, f"'{p.name}' skipped — unsupported type '{p.suffix}'. Allowed: {', '.join(config.ALLOWED_EXTENSIONS)}"
+            return False, (
+                f"'{p.name}' skipped — unsupported type '{p.suffix}'. "
+                f"Allowed: {', '.join(config.ALLOWED_EXTENSIONS)}"
+            )
 
         size_mb = p.stat().st_size / (1024 * 1024)
         if size_mb > config.MAX_FILE_SIZE_MB:
-            return False, f"'{p.name}' skipped — file size {size_mb:.1f}MB exceeds {config.MAX_FILE_SIZE_MB}MB limit"
+            return False, (
+                f"'{p.name}' skipped — file size {size_mb:.1f}MB "
+                f"exceeds {config.MAX_FILE_SIZE_MB}MB limit"
+            )
+
+        # Page count check — only for PDFs, requires pymupdf
+        if p.suffix.lower() == ".pdf":
+            try:
+                import pymupdf
+                doc = pymupdf.open(path)
+                page_count = len(doc)
+                doc.close()
+                if page_count > config.MAX_PDF_PAGES:
+                    return False, (
+                        f"'{p.name}' skipped — {page_count} pages exceeds the "
+                        f"{config.MAX_PDF_PAGES}-page limit. "
+                        f"Split into smaller sections before uploading."
+                    )
+            except ImportError:
+                pass  # pymupdf not available — skip page check
+            except Exception:
+                pass  # could not open — let conversion step handle it
 
         return True, ""
 
@@ -67,15 +91,17 @@ class DocumentManager:
         added = 0
         skipped = 0
         validation_errors = []
+        total = len(document_paths)
 
         for i, doc_path in enumerate(document_paths):
+
+            # ── Step 1: validation ────────────────────────────────────
             if progress_callback:
                 progress_callback(
-                    (i + 1) / len(document_paths),
-                    f"Processing {Path(doc_path).name}",
+                    i / total,
+                    f"Validating {Path(doc_path).name}…"
                 )
 
-            # Validate before processing — catches bad type and size
             is_valid, error_msg = self._validate_file(doc_path)
             if not is_valid:
                 validation_errors.append(error_msg)
@@ -90,10 +116,24 @@ class DocumentManager:
                 continue
 
             try:
+                # ── Step 2: PDF → Markdown conversion ─────────────────
+                if progress_callback:
+                    progress_callback(
+                        (i + 0.15) / total,
+                        f"Converting {Path(doc_path).name} to Markdown…"
+                    )
+
                 if Path(doc_path).suffix.lower() == ".md":
                     shutil.copy(doc_path, md_path)
                 else:
                     pdfs_to_markdowns(str(doc_path), overwrite=False)
+
+                # ── Step 3: chunking ───────────────────────────────────
+                if progress_callback:
+                    progress_callback(
+                        (i + 0.35) / total,
+                        f"Chunking {Path(doc_path).name}…"
+                    )
 
                 parent_chunks, child_chunks = self._container.chunker.create_chunks_single(md_path)
 
@@ -101,14 +141,43 @@ class DocumentManager:
                     skipped += 1
                     continue
 
+                # ── Step 4: embedding + Qdrant in batches ──────────────
                 collection = self._container.vector_db.get_collection(config.CHILD_COLLECTION)
-                collection.add_documents(child_chunks)
+                BATCH_SIZE = 50
+                total_chunks = len(child_chunks)
+
+                for batch_start in range(0, total_chunks, BATCH_SIZE):
+                    batch = child_chunks[batch_start:batch_start + BATCH_SIZE]
+                    collection.add_documents(batch)
+
+                    if progress_callback:
+                        chunks_done = min(batch_start + BATCH_SIZE, total_chunks)
+                        # Scale embedding progress across 35%→90% of this file's slot
+                        embed_frac = chunks_done / total_chunks
+                        overall = (i + 0.35 + embed_frac * 0.55) / total
+                        progress_callback(
+                            min(overall, (i + 0.92) / total),
+                            f"Embedding {Path(doc_path).name} — "
+                            f"{chunks_done}/{total_chunks} chunks"
+                        )
+
+                # ── Step 5: save parent chunks ─────────────────────────
+                if progress_callback:
+                    progress_callback(
+                        (i + 0.95) / total,
+                        f"Saving {Path(doc_path).name} to knowledge base…"
+                    )
+
                 self._container.parent_store.save_many(parent_chunks)
                 added += 1
 
             except Exception as e:
                 validation_errors.append(f"'{Path(doc_path).name}' error — {str(e)}")
                 skipped += 1
+
+        # Final — mark complete
+        if progress_callback:
+            progress_callback(1.0, "Done")
 
         return added, skipped, validation_errors
 

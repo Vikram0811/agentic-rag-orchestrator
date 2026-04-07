@@ -9,13 +9,16 @@ from core.document_manager import DocumentManager
 
 def create_gradio_ui(chat_service: ChatService, doc_manager: DocumentManager):
 
+    def clean_name(f):
+        return f.replace(".md", "").replace(".pdf", "").replace("_", " ")
+
     def format_file_list():
         files = doc_manager.get_markdown_files()
         if not files:
             return "📭 No documents available in the knowledge base"
-        return "\n".join([f"• {f}" for f in files])
+        return "\n".join(f"{i+1}. {clean_name(f)}" for i, f in enumerate(files))
 
-    def upload_handler(files, progress=gr.Progress()):
+    def upload_handler(files, progress=gr.Progress(track_tqdm=True)):
         if not files:
             return None, format_file_list(), format_file_list()
         added, skipped, errors = doc_manager.add_documents(
@@ -43,10 +46,10 @@ def create_gradio_ui(chat_service: ChatService, doc_manager: DocumentManager):
         async for chunk in chat_service.stream_ask(message, session_id):
             yield chunk
 
-    with gr.Blocks(title="Agentic RAG Assistant") as demo:
+    with gr.Blocks(title="Agentic RAG Orchestrator") as demo:
 
-        gr.Markdown("# Agentic RAG Assistant")
-        gr.Markdown("Upload documents and chat with your knowledge base.")
+        gr.Markdown("# Agentic RAG Orchestrator")
+        gr.Markdown("Enterprise knowledge retrieval")
 
         # One gr.State per browser session — Gradio creates a new instance per user
         session_state = gr.State(lambda: str(uuid.uuid4()))
@@ -56,7 +59,7 @@ def create_gradio_ui(chat_service: ChatService, doc_manager: DocumentManager):
                 value=format_file_list(),
                 interactive=False,
                 lines=3,
-                label="📂 Uploaded Documents",
+                label="📂 Knowledge Base",
                 show_label=True,
             )
             chatbot = gr.Chatbot(
@@ -68,9 +71,9 @@ def create_gradio_ui(chat_service: ChatService, doc_manager: DocumentManager):
             gr.ChatInterface(
                 fn=stream_fn,
                 chatbot=chatbot,
-                additional_inputs=[session_state]  # pass session_id to stream_fn
+                additional_inputs=[session_state]
             )
-        
+
             new_conversation_btn.click(
                 clear_chat_handler,
                 inputs=[session_state],
@@ -78,26 +81,32 @@ def create_gradio_ui(chat_service: ChatService, doc_manager: DocumentManager):
             )
 
         with gr.Tab("📂 Documents"):
-            gr.Markdown("### Upload PDF or Markdown files")
+            gr.Markdown("### Upload PDF files")
             files_input = gr.File(
                 file_count="multiple",
                 type="filepath",
                 height=150,
                 show_label=False,
             )
-            add_btn = gr.Button("Add Documents", variant="primary")
-            gr.Markdown("### Knowledge Base Files")
+            add_btn = gr.Button("Add to Knowledge Base", variant="primary")
+            gr.Markdown("### Knowledge Base")
             file_list = gr.Textbox(
                 value=format_file_list(),
                 interactive=False,
                 lines=8,
                 show_label=False,
+                elem_id="file-list-box",
             )
             with gr.Row():
                 refresh_btn = gr.Button("Refresh")
                 clear_btn = gr.Button("Clear All", variant="stop")
 
-            add_btn.click(upload_handler, [files_input], [files_input, file_list, chat_doc_status], show_progress="corner")
+            add_btn.click(
+                upload_handler,
+                inputs=[files_input],
+                outputs=[files_input, file_list, chat_doc_status],
+                show_progress="full",
+            )
             refresh_btn.click(format_file_list, None, file_list)
             clear_btn.click(clear_handler, None, [file_list, chat_doc_status])
 
