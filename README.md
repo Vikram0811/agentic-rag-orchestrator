@@ -28,41 +28,41 @@ This system adds the layer between POC and internal tool:
 
 ## Features
 
-- **Hybrid Retrieval** — Dense semantic search (all-mpnet-base-v2) + Sparse BM25 combined with Reciprocal Rank Fusion
-- **Parent-Child Chunking** — Small chunks for precise retrieval, large parent chunks for full context
-- **Agentic ReAct Loop** — LangGraph agent that searches, retrieves, and reasons in multiple steps
-- **Query Rewriting** — Rewrites user questions into optimized search queries before retrieval
-- **Clarification Handling** — Asks for clarification on ambiguous questions via LangGraph interrupt
-- **Confidence Scoring** — Warns users when retrieval scores fall below threshold
-- **Two-Tier Response Cache** — Per-session cache + cross-session cache with Least Recently Used (LRU) eviction and configurable TTL
-- **Multi-User Session Isolation** — Each browser session gets an isolated LangGraph thread
-- **True Token Streaming** — Real-time streaming via `astream_events()` not batch responses
-- **Structured Error Classification** — `RETRIEVAL_EMPTY`, `LLM_TIMEOUT`, `GRAPH_ERROR`, `OFF_TOPIC`, `UNEXPECTED`
-- **File Validation** — Type and size validation with configurable limits in `config.py`
-- **Structured JSON Logging** — Per-request latency breakdown, retrieval scores, and error types
+- **Hybrid Retrieval** - Dense semantic search (all-mpnet-base-v2) + Sparse BM25 combined with Reciprocal Rank Fusion
+- **Parent-Child Chunking** - Small chunks for precise retrieval, large parent chunks for full context
+- **Agentic ReAct Loop** - LangGraph agent that searches, retrieves, and reasons in multiple steps
+- **Query Rewriting** - Rewrites user questions into optimized search queries before retrieval
+- **Clarification Handling** - Asks for clarification on ambiguous questions via LangGraph interrupt
+- **Confidence Scoring** - Warns users when retrieval scores fall below threshold
+- **Two-Tier Response Cache** - Per-session cache + cross-session cache with Least Recently Used (LRU) eviction and configurable TTL
+- **Multi-User Session Isolation** - Each browser session gets an isolated LangGraph thread
+- **True Token Streaming** - Real-time streaming via `astream_events()` not batch responses
+- **Structured Error Classification** - `RETRIEVAL_EMPTY`, `LLM_TIMEOUT`, `GRAPH_ERROR`, `OFF_TOPIC`, `UNEXPECTED`
+- **File Validation** - Type and size validation with configurable limits in `config.py`
+- **Structured JSON Logging** - Per-request latency breakdown, retrieval scores, and error types
 
 ---
 
 ## Architecture
 
 ```
-LAYER 1 — PRESENTATION
+LAYER 1 - PRESENTATION
   Gradio UI (gradio_app.py)
   gr.ChatInterface + gr.State (per-session isolation)
         |
         v
-LAYER 2 — SERVICE
+LAYER 2 - SERVICE
   ChatService          DocumentManager
   ResponseCache
         |
         v
-LAYER 3 — ORCHESTRATION
+LAYER 3 - ORCHESTRATION
   RAGOrchestrator
   LangGraph State Machine:
     summarize -> analyze_rewrite -> process_question -> aggregate
         |
         v
-LAYER 4 — INFRASTRUCTURE
+LAYER 4 - INFRASTRUCTURE
   AppContainer
   Qdrant VectorDB   ParentStore   GPT-4o-mini   DocumentChunker
 ```
@@ -176,7 +176,7 @@ All tunable parameters are in `config.py`:
 | `MIN_PARENT_SIZE` | `2000` | Minimum parent chunk size |
 | `MAX_PARENT_SIZE` | `10000` | Maximum parent chunk size |
 | `LLM_MODEL` | `gpt-4o-mini` | OpenAI model name |
-| `LLM_TEMPERATURE` | `0` | LLM temperature — keep at 0 for factual RAG |
+| `LLM_TEMPERATURE` | `0` | LLM temperature - keep at 0 for factual RAG |
 
 ---
 
@@ -216,18 +216,18 @@ agentic-rag-orchestrator/
 
 ## Documentation
 
-- [Workflow Walkthrough](docs/WORKFLOW.md) — step-by-step trace from user query to streamed answer
-- [Component Reference](docs/COMPONENTS.md) — detailed explanation of every system component
+- [Workflow Walkthrough](docs/WORKFLOW.md) - step-by-step trace from user query to streamed answer
+- [Component Reference](docs/COMPONENTS.md) - detailed explanation of every system component
 
 ---
 
 ## Known Limitations
 
-- In-memory cache resets on restart — replace with Redis for persistent caching
-- Qdrant runs locally — use Qdrant Cloud for multi-instance deployment
-- `RAG_MIN_RETRIEVAL_SCORE` is calibrated per document set — tune for your PDFs
-- No answer validation step — LLM answer not programmatically verified against source post-generation
-- No rate limiting — add per-session rate limiting before production/public deployment
+- In-memory cache resets on restart - replace with Redis for persistent caching
+- Qdrant runs locally - use Qdrant Cloud for multi-instance deployment
+- `RAG_MIN_RETRIEVAL_SCORE` is calibrated per document set - tune for your PDFs
+- No answer validation step - LLM answer not programmatically verified against source post-generation
+- No rate limiting - add per-session rate limiting before production/public deployment
 
 ---
 
@@ -241,4 +241,4 @@ Extended with production hardening across three tiers: hybrid retrieval with sco
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE) for details.
