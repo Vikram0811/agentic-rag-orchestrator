@@ -1,6 +1,6 @@
 # Query Processing
 
-## Step 1 — Cache Check
+## Step 1 - Cache Check
 Before any LLM call is made, `ChatService` checks the two-tier `ResponseCache`.
 
 - **Per-session cache** checks if this exact question was asked in the current session.
@@ -10,14 +10,14 @@ Cache hits avoid the entire LangGraph pipeline, reducing latency from ~10 second
 
 ---
 
-## Step 2 — Conversation Summarization
+## Step 2 - Conversation Summarization
 If the conversation has more than **4 messages**, the `summarize` node condenses recent history into a compact summary.
 
 This summary is passed to **query analysis** to provide context without bloating the prompt with the full conversation history.
 
 ---
 
-## Step 3 — Query Analysis and Rewriting
+## Step 3 - Query Analysis and Rewriting
 The `analyze_rewrite` node uses a **structured LLM call** to:
 
 - Determine if the question is clear
@@ -29,7 +29,7 @@ If the question is unclear, the system returns a **clarification request** and w
 
 ---
 
-## Step 4 — Agentic Retrieval Loop
+## Step 4 - Agentic Retrieval Loop
 
 1. **Agent node** calls the LLM with the RAG agent prompt and available tools  
 2. LLM calls `search_child_chunks` with an optimized query  
@@ -44,7 +44,7 @@ If the question is unclear, the system returns a **clarification request** and w
 
 ---
 
-## Step 5 — Response Aggregation
+## Step 5 - Response Aggregation
 The `aggregate` node:
 
 - Collects answers from all rewritten question branches
@@ -58,14 +58,14 @@ Additional checks:
 
 ---
 
-## Step 6 — Streaming to UI
+## Step 6 - Streaming to UI
 The final answer streams **token by token** using `astream_events()` in LangGraph.
 
 This stream feeds into **Gradio's ChatInterface** as a progressive string, allowing users to see words appear in real time instead of waiting for the full response.
 
 ---
 
-## Step 7 — Cache Storage
+## Step 7 - Cache Storage
 After a successful response, `ChatService` stores the answer in:
 
 - **Per-session cache**
