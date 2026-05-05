@@ -49,19 +49,19 @@ This system adds the layer between POC and internal tool:
 LAYER 1 - PRESENTATION
   Gradio UI (gradio_app.py)
   gr.ChatInterface + gr.State (per-session isolation)
-        |
-        v
+        │
+        ▼
 LAYER 2 - SERVICE
   ChatService          DocumentManager
   ResponseCache
-        |
-        v
+        │
+        ▼
 LAYER 3 - ORCHESTRATION
   RAGOrchestrator
   LangGraph State Machine:
     summarize -> analyze_rewrite -> process_question -> aggregate
-        |
-        v
+        │
+        ▼   
 LAYER 4 - INFRASTRUCTURE
   AppContainer
   Qdrant VectorDB   ParentStore   GPT-4o-mini   DocumentChunker
