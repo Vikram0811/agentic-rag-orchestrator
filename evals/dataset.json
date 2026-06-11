@@ -1,0 +1,62 @@
+[
+  {
+    "question": "What does RAG stand for?",
+    "ground_truth": "RAG stands for Retrieval-Augmented Generation."
+  },
+  {
+    "question": "What are the two main components of the RAG model?",
+    "ground_truth": "The two main components are a retriever and a generator. The retriever finds relevant documents and the generator produces the final answer."
+  },
+  {
+    "question": "What retriever does RAG use?",
+    "ground_truth": "RAG uses a Dense Passage Retriever (DPR) as its retriever component."
+  },
+  {
+    "question": "What generator does RAG use?",
+    "ground_truth": "RAG uses BART as its generator component."
+  },
+  {
+    "question": "What problem does RAG solve that parametric models cannot?",
+    "ground_truth": "RAG solves the problem of accessing and updating knowledge without retraining. Parametric models have knowledge baked into their weights at training time, while RAG can retrieve up-to-date information from an external knowledge source at query time."
+  },
+  {
+    "question": "What is the difference between RAG-Sequence and RAG-Token?",
+    "ground_truth": "RAG-Sequence uses the same retrieved document to generate the entire answer sequence. RAG-Token can use different retrieved documents for each token in the generated answer."
+  },
+  {
+    "question": "What dataset is used as the knowledge source in the RAG paper?",
+    "ground_truth": "The RAG paper uses a Wikipedia dump as the non-parametric knowledge source."
+  },
+  {
+    "question": "What tasks were used to evaluate RAG in the paper?",
+    "ground_truth": "RAG was evaluated on open-domain question answering tasks including Natural Questions, TriviaQA, WebQuestions, and CuratedTrec, as well as knowledge-intensive tasks like Jeopardy question generation and fact verification."
+  },
+  {
+    "question": "How does RAG handle knowledge updates?",
+    "ground_truth": "RAG can be updated by swapping out the document index without retraining the model, making knowledge updates straightforward compared to parametric models."
+  },
+  {
+    "question": "What is a non-parametric memory in the context of RAG?",
+    "ground_truth": "Non-parametric memory refers to an external knowledge source such as a document index that the model can retrieve from at inference time, as opposed to parametric memory which is knowledge stored in model weights."
+  },
+  {
+    "question": "Who are the authors of the RAG paper?",
+    "ground_truth": "The RAG paper was authored by Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir Karpukhin, Naman Goyal, Heinrich Küttler, Mike Lewis, Wen-tau Yih, Tim Rocktäschel, Sebastian Riedel, and Douwe Kiela."
+  },
+  {
+    "question": "What is the role of the document encoder in RAG?",
+    "ground_truth": "The document encoder converts documents into dense vector representations that are stored in the index and used for retrieval by computing similarity with the query vector."
+  },
+  {
+    "question": "How does RAG combine retrieval and generation?",
+    "ground_truth": "RAG combines retrieval and generation by first retrieving relevant document passages using the query, then conditioning the generator on both the original query and the retrieved passages to produce the final answer."
+  },
+  {
+    "question": "What is marginalization in RAG-Sequence model?",
+    "ground_truth": "In RAG-Sequence, marginalization refers to summing the probabilities of generating the full answer sequence across all retrieved documents, weighted by the retrieval probability of each document."
+  },
+  {
+    "question": "What is the capital of France?",
+    "ground_truth": "This question cannot be answered from the uploaded documents as it is not covered in the RAG paper."
+  }
+]

@@ -10,6 +10,7 @@ Responsibilities:
 The UI and ChatService never touch LangGraph types directly.
 """
 import time
+import config
 from pathlib import Path
 
 from langchain_core.messages import HumanMessage, AIMessage
@@ -164,7 +165,7 @@ class RAGOrchestrator:
         cfg = self._container.get_config(session_id)
         cfg.setdefault("configurable", {})
         cfg["configurable"]["trace_id"] = request_id
-        cfg["recursion_limit"] = 50
+        cfg["recursion_limit"] = config.RECURSION_LIMIT
         return cfg
 
     def _extract_answer(self, result: dict) -> str:
