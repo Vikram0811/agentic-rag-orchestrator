@@ -17,6 +17,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 from core.schemas import RAGResponse, SourceReference, StreamEvent
 from core.logging_config import logger
+from core import observability as obs
 
 
 class RAGOrchestrator:
@@ -36,6 +37,15 @@ class RAGOrchestrator:
     # OR track via a mutable closure during streaming:
 
     async def stream(self, query: str, request_id: str, session_id: str):
+        with obs.trace(
+            "rag_stream_query",
+            metadata={"request_id": request_id, "session_id": session_id, "query": query},
+            trace_id=request_id,
+        ):
+            async for evt in self._stream_inner(query, request_id, session_id):
+                yield evt
+
+    async def _stream_inner(self, query: str, request_id: str, session_id: str):
         initial_state = self._build_state(query, request_id)
         config = self._build_config(request_id, session_id)
         t0 = time.monotonic()
@@ -88,6 +98,14 @@ class RAGOrchestrator:
     # ------------------------------------------------------------------
 
     def invoke(self, query: str, request_id: str, session_id: str) -> RAGResponse:
+        with obs.trace(
+            "rag_invoke_query",
+            metadata={"request_id": request_id, "session_id": session_id, "query": query},
+            trace_id=request_id,
+        ):
+            return self._invoke_inner(query, request_id, session_id)
+
+    def _invoke_inner(self, query: str, request_id: str, session_id: str) -> RAGResponse:
         t0 = time.monotonic()
         initial_state = self._build_state(query, request_id)
         config = self._build_config(request_id, session_id)

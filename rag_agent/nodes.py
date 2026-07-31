@@ -4,6 +4,7 @@ from .schemas import QueryAnalysis
 from .prompts import *
 import re
 import time
+from core import observability as obs
 
 # Confidence threshold — answers with top retrieval score below this get a disclaimer
 CONFIDENCE_THRESHOLD = 0.4
@@ -26,10 +27,22 @@ def analyze_chat_and_summarize(state: State, llm):
         role = "User" if isinstance(msg, HumanMessage) else "Assistant"
         conversation += f"{role}: {msg.content}\n"
 
-    summary_response = llm.with_config(temperature=0.2).invoke(
-        [SystemMessage(content=get_conversation_summary_prompt())] +
-        [HumanMessage(content=conversation)]
-    )
+    with obs.span("summarize_conversation", kind="llm") as sp:
+        summary_response = llm.with_config(temperature=0.2).invoke(
+            [SystemMessage(content=get_conversation_summary_prompt())] +
+            [HumanMessage(content=conversation)]
+        )
+        usage = obs.usage_from_ai_message(summary_response)
+        sp.set_llm_usage(
+            model=llm.model_name if hasattr(llm, "model_name") else "unknown",
+            input_tokens=usage["input_tokens"],
+            output_tokens=usage["output_tokens"],
+            cost_usd=obs.estimate_cost_usd(
+                getattr(llm, "model_name", ""), usage["input_tokens"], usage["output_tokens"]
+            ),
+        )
+        sp.set_output({"summary": summary_response.content})
+
     return {"conversation_summary": summary_response.content, "agent_answers": [{"__reset__": True}]}
 
 
@@ -75,10 +88,13 @@ def analyze_and_rewrite_query(state: 'State', llm):
     ) + f"User Query:\n{last_message.content}\n"
 
     llm_with_structure = llm.with_config(temperature=0.1).with_structured_output(QueryAnalysis)
-    response = llm_with_structure.invoke(
-        [SystemMessage(content=get_query_analysis_prompt()),
-         HumanMessage(content=context_section)]
-    )
+    with obs.span("analyze_and_rewrite_query", kind="llm", input_payload={"query": last_message.content}) as sp:
+        response = llm_with_structure.invoke(
+            [SystemMessage(content=get_query_analysis_prompt()),
+             HumanMessage(content=context_section)]
+        )
+        sp.set_attribute("model", getattr(llm, "model_name", "unknown"))
+        sp.set_output({"is_clear": response.is_clear, "questions": response.questions})
 
     # -----------------------------
     # 3️⃣ Clear query path
@@ -124,16 +140,37 @@ def human_input_node(state: State):
 def agent_node(state: AgentState, llm_with_tools):
     sys_msg = SystemMessage(content=get_rag_agent_prompt())
     t0 = time.monotonic()
+    call_count = state.get("tool_call_count", 0) + 1
 
-    if not state.get("messages"):
-        human_msg = HumanMessage(content=state["question"])
-        response = llm_with_tools.invoke([sys_msg] + [human_msg])
+    with obs.span("agent_reasoning_step", kind="agent", input_payload={"question": state.get("question")}) as sp:
+        sp.set_attribute("tool_call_count", call_count)
+        if not state.get("messages"):
+            human_msg = HumanMessage(content=state["question"])
+            response = llm_with_tools.invoke([sys_msg] + [human_msg])
+            retrieval_ms = int((time.monotonic() - t0) * 1000)
+            _record_agent_span_usage(sp, response)
+            return {"messages": [human_msg, response], "retrieval_ms": retrieval_ms, "tool_call_count": call_count}
+
+        response = llm_with_tools.invoke([sys_msg] + state["messages"])
         retrieval_ms = int((time.monotonic() - t0) * 1000)
-        return {"messages": [human_msg, response], "retrieval_ms": retrieval_ms}
+        _record_agent_span_usage(sp, response)
+        return {"messages": [response], "retrieval_ms": retrieval_ms, "tool_call_count": call_count}
 
-    response = llm_with_tools.invoke([sys_msg] + state["messages"])
-    retrieval_ms = int((time.monotonic() - t0) * 1000)
-    return {"messages": [response], "retrieval_ms": retrieval_ms}
+
+def _record_agent_span_usage(sp, response):
+    usage = obs.usage_from_ai_message(response)
+    model = (getattr(response, "response_metadata", {}) or {}).get("model_name", "unknown")
+    sp.set_llm_usage(
+        model=model,
+        input_tokens=usage["input_tokens"],
+        output_tokens=usage["output_tokens"],
+        cost_usd=obs.estimate_cost_usd(model, usage["input_tokens"], usage["output_tokens"]),
+    )
+    tool_calls = getattr(response, "tool_calls", None) or []
+    sp.set_output({
+        "content_preview": (response.content or "")[:200],
+        "tool_calls": [tc.get("name") for tc in tool_calls],
+    })
 
 
 def extract_final_answer(state: AgentState):
@@ -212,10 +249,21 @@ def aggregate_responses(state: 'State', llm):
 
     # Single timed LLM call — was incorrectly called twice before
     t0 = time.monotonic()
-    synthesis_response = llm.invoke(
-        [SystemMessage(content=get_aggregation_prompt()),
-         HumanMessage(content=user_content)]
-    )
+    with obs.span("aggregate_and_synthesize", kind="llm", input_payload={"original_query": state.get("originalQuery", "")}) as sp:
+        synthesis_response = llm.invoke(
+            [SystemMessage(content=get_aggregation_prompt()),
+             HumanMessage(content=user_content)]
+        )
+        usage = obs.usage_from_ai_message(synthesis_response)
+        model = (getattr(synthesis_response, "response_metadata", {}) or {}).get("model_name", "unknown")
+        sp.set_llm_usage(
+            model=model,
+            input_tokens=usage["input_tokens"],
+            output_tokens=usage["output_tokens"],
+            cost_usd=obs.estimate_cost_usd(model, usage["input_tokens"], usage["output_tokens"]),
+        )
+        sp.set_attribute("low_confidence", is_low_confidence)
+        sp.set_output({"content_preview": (synthesis_response.content or "")[:200]})
     generation_ms = int((time.monotonic() - t0) * 1000)
 
     document_count = state.get("document_count", 1)

@@ -23,3 +23,7 @@ class AgentState(MessagesState):
     question_index: int = 0
     final_answer: str = ""
     agent_answers: List[dict] = []
+    # Incremented once per agent_node pass. Used by rag_agent/edges.py to
+    # force-stop the agent<->tools loop after config.MAX_AGENT_TOOL_CALLS
+    # passes instead of letting it retry indefinitely on ambiguous queries.
+    tool_call_count: int = 0

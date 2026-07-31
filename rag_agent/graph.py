@@ -1,6 +1,6 @@
 from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
 from functools import partial
 
 from .graph_state import State
@@ -20,7 +20,7 @@ def create_agent_graph(llm, tools_list):
     agent_builder.add_node("extract_answer", extract_final_answer)
     
     agent_builder.add_edge(START, "agent")    
-    agent_builder.add_conditional_edges("agent", tools_condition, {"tools": "tools", END: "extract_answer"})
+    agent_builder.add_conditional_edges("agent", route_agent_or_stop, {"tools": "tools", END: "extract_answer"})
     agent_builder.add_edge("tools", "agent")    
     agent_builder.add_edge("extract_answer", END)
     

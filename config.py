@@ -18,6 +18,26 @@ MAX_PDF_PAGES = 150
 # --- RAG Configuration ---
 RAG_MIN_RETRIEVAL_SCORE = 0.62
 
+# --- Agent Loop Safety ---
+# MAX_AGENT_TOOL_CALLS: soft cap enforced in rag_agent/edges.py's routing logic.
+# Once the agent has made this many reasoning/tool-call passes without landing
+# on a final answer, we force it to stop and fall back to
+# extract_final_answer's "Unable to generate an answer." path — a graceful
+# stop instead of an unbounded retry loop. Found via AgentOps trace data:
+# ambiguous hash-name queries (e.g. "SHA2", "MD5") were triggering 30-100+
+# passes before eventually failing on an OpenAI rate limit.
+MAX_AGENT_TOOL_CALLS = 6
+
+# RECURSION_LIMIT: hard backstop passed to LangGraph's `recursion_limit`
+# config. This was previously referenced in core/rag_orchestrator.py
+# (`config.RECURSION_LIMIT`) but never actually defined here — meaning it
+# either raised AttributeError on every request, or a local/uncommitted
+# config.py silently masked the bug. Set comfortably above
+# MAX_AGENT_TOOL_CALLS so the soft cap above is what normally triggers;
+# this is purely a last-resort ceiling in case some other loop path opens
+# up in the future.
+RECURSION_LIMIT = 30
+
 # File validation
 MAX_FILE_SIZE_MB = 50
 ALLOWED_EXTENSIONS = [".pdf", ".md"]
