@@ -109,3 +109,21 @@ Two tests, both via real trace data:
   confidence logic). A better long-term fix might involve a stricter
   early-stop condition based on retrieval score rather than a fixed call
   count.
+
+## Eval baseline: 13/13 (2026-08-04)
+
+`evals/run_judge.py` (AgentOps trace-based LLM judge, see that repo's
+`docs/CASE_STUDY.md`) established a first known-good baseline against the
+real hash-values PDF: **13/13 passed**, including the one negative case
+(a hash type absent from the document, correctly reported as not found
+rather than hallucinated).
+
+The judge itself was sanity-checked before trusting this result —
+`evals/test_judge_catches_failure.py` fed it a real, correct agent answer
+against a deliberately wrong ground truth and confirmed it returns `FAIL`
+with an accurate rationale, not just defaulting to `PASS`.
+
+This baseline is the reference point for catching future regressions: a
+prompt, model, or config change that drops below 13/13 on a re-run is a
+signal worth investigating, the same way the MD5/SHA2 trace data above
+was the signal that caught the retry-loop bug.
