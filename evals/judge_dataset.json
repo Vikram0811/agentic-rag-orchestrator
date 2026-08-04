@@ -1,0 +1,80 @@
+[
+  {
+    "id": "crc32",
+    "question": "What is the CRC32 hash value?",
+    "ground_truth": "2ed99b2e",
+    "expect_found": true
+  },
+  {
+    "id": "adler32",
+    "question": "What is the ADLER32 hash value?",
+    "ground_truth": "0284f644",
+    "expect_found": true
+  },
+  {
+    "id": "ripemd160",
+    "question": "What is the RIPEMD160 hash value?",
+    "ground_truth": "c15581387a0d3393c64aa0ca1ec952d1f8077f9b",
+    "expect_found": true
+  },
+  {
+    "id": "md2",
+    "question": "What is the MD2 hash value?",
+    "ground_truth": "b2d55d6a6659ff0e56cf671c43a1dbba",
+    "expect_found": true
+  },
+  {
+    "id": "md4",
+    "question": "What is the MD4 hash value?",
+    "ground_truth": "7e61f67eea92beac20fc3864cd73aa23",
+    "expect_found": true
+  },
+  {
+    "id": "md5",
+    "question": "What is the MD5 hash value?",
+    "ground_truth": "807d8350a068ff6bedb50b131c9b6713",
+    "expect_found": true
+  },
+  {
+    "id": "sha1",
+    "question": "What is the SHA1 hash value?",
+    "ground_truth": "03c2556e76896e97c99b9a0b508f3313b7f1a79a",
+    "expect_found": true
+  },
+  {
+    "id": "sha256",
+    "question": "What is the SHA256 hash value?",
+    "ground_truth": "324fca331a85ad94213e43d0443bea448e1e8c36aed490d75820001e893080c1",
+    "expect_found": true
+  },
+  {
+    "id": "sha384",
+    "question": "What is the SHA384 hash value?",
+    "ground_truth": "c5b4244a0bc6a7ad11e82ef4f3673bba0e52806807baac995fc8703565bcd88ec87e4587631f0c9ac319a907ffc749df",
+    "expect_found": true
+  },
+  {
+    "id": "sha512",
+    "question": "What is the SHA512 hash value?",
+    "ground_truth": "3ba3dc56f956f7d14907f77595840114767350a766e30c8a8c1159772a401dd5aaee43bf8ae56bc671ebff2d644e7a60cb31955139c8c06e82d1ba16030e2bbb",
+    "expect_found": true
+  },
+  {
+    "id": "haval256_4",
+    "question": "What is the HAVAL256-4 hash value?",
+    "ground_truth": "5e94e25802a499986763a9d3d901f29aeb81ae4044728c24a096cdab581b9667",
+    "expect_found": true
+  },
+  {
+    "id": "whirlpool",
+    "question": "What is the WHIRLPOOL hash value?",
+    "ground_truth": "be773e005d2a58f4df56137537749980c9decfc94c5e7e7f7f3b29195200f6d3c992f6ff07650a0fe61d52ef1b41549a6abdd598cbcc7d1ca0227d967a75c8fc",
+    "expect_found": true
+  },
+  {
+    "id": "blake2_negative",
+    "question": "What is the BLAKE2 hash value?",
+    "ground_truth": "Not present in the source document — a correct answer states this could not be found, rather than guessing or fabricating a value.",
+    "expect_found": false
+  }
+]
